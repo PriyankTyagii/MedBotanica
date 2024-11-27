@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Plant Recognition</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #e3f2fd;
+            color: #333;
+        }
+
+        h1 {
+            margin-top: 30px;
+            font-size: 2.5em;
+            color: #1f8acb;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #upload-container {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #upload-container:hover {
+            transform: scale(1.05);
+        }
+
+        #upload-container input {
+            padding: 12px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            width: 270px;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+        #upload-container input:focus {
+            border-color: #3498db;
+        }
+
+        #upload-container button {
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+            font-size: 1.1em;
+        }
+
+        #upload-container button:hover {
+            background-color: #2980b9;
+        }
+
+        #result-container {
+            margin-top: 50px;
+            padding: 30px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            display: none;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #uploaded-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        #uploaded-image:hover {
+            transform: scale(1.05);
+        }
+
+        .plant-info-section {
+            margin-top: 25px;
+            padding: 25px;
+            background-color: #f4f6f9;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .plant-info-section h3 {
+            color: #3498db;
+            font-size: 1.4em;
+        }
+
+        .plant-info-section p {
+            text-align: left;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .button-container {
+            margin-top: 30px;
+        }
+
+        .button-container button {
+            padding: 12px 24px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+
+        .button-container button:hover {
+            background-color: #2ecc71;
+        }
+
+        @media (max-width: 768px) {
+            #upload-container input {
+                width: 200px;
+            }
+
+            #upload-container button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="home-page">
+        <h1>Medical Plant Recognition</h1>
+        <p>Upload an image of a medical plant to recognize it and get detailed information.</p>
+        <div id="upload-container">
+            <input type="file" name="plant-image" id="plant-image" accept="image/*" required>
+            <button type="button" onclick="submitImage()">Submit</button>
+        </div>
+    </div>
+
+    <div id="result-container">
+        <h1>Recognition Result</h1>
+        <img id="uploaded-image" src="#" alt="Uploaded Plant" />
+        <h2 id="plant-name">Loading...</h2>
+
+        <div class="plant-info-section">
+            <h3>Details</h3>
+            <p id="plant-info">Loading...</p>
+        </div>
+
+        <div class="plant-info-section">
+            <h3>Diseases It Can Treat</h3>
+            <p id="plant-diseases">Loading...</p>
+        </div>
+
+        <div class="plant-info-section">
+            <h3>Home Remedies</h3>
+            <p id="plant-remedies">Loading...</p>
+        </div>
+
+        <div class="button-container">
+            <button onclick="goBack()">Back to Home</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script>
+        let model;
+
+        async function loadModel() {
+            const modelURL = "my_model/model.json";
+            const metadataURL = "my_model/metadata.json";
+            model = await tmImage.load(modelURL, metadataURL);
+        }
+
+        async function predictImage(imageElement) {
+            const predictions = await model.predict(imageElement);
+            return predictions;
+        }
+
+        function updateResult(topPrediction) {
+            const plantInfo = {
+    "TULSI": {
+        details: `• Tulsi, also known as Holy Basil, is revered for its medicinal properties. It is rich in antioxidants and has anti-inflammatory, antimicrobial, and immune-boosting qualities.
+• It helps in managing stress and improving mental clarity. It is also used to improve heart health and regulate blood sugar levels.
+• Tulsi leaves are commonly used in herbal teas and can be consumed raw to enhance immunity.`,
+        diseases: "• Cough and Cold\n• Respiratory Infections\n• Skin Infections\n• Asthma\n• Fever",
+        remedies: "• Tulsi leaves for immunity boost and to fight common cold.\n• Tea made from Tulsi to relieve cough and respiratory issues.\n• Juice from Tulsi for improving digestion and metabolism."
+    },
+    "NEEM": {
+        details: `• Neem is a powerful herb known for its antibacterial, antifungal, and antiviral properties.
+• It is often referred to as the 'Village Pharmacy' due to its extensive use in traditional medicine.
+• Neem is effective in treating a wide range of ailments, including skin disorders, infections, and oral health issues.
+• It is also beneficial for blood purification and acts as a detoxifying agent.`,
+        diseases: "• Skin Infections\n• Acne\n• Malaria\n• Dengue\n• Fever",
+        remedies: "• Neem oil for acne treatment and to reduce skin irritation.\n• Neem leaves can be used for fever reduction.\n• Neem powder mixed with water can be applied to treat infections and wounds."
+    },
+    "PAPAYA": {
+        details: `• Papaya is rich in vitamins A, C, and E, which help boost the immune system and maintain healthy skin.
+• The enzymes in papaya, like papain, aid in digestion and can help reduce bloating and indigestion.
+• Papaya also has anti-inflammatory and antioxidant properties that are beneficial for heart health and overall well-being.`,
+        diseases: "• Digestion Issues\n• Skin Burns\n• Infections\n• Fever\n• Constipation",
+        remedies: "• Papaya leaf juice for improving digestion and reducing inflammation.\n• Apply fresh papaya pulp on skin burns for soothing effects.\n• Papaya is often used in traditional medicine to treat digestive issues and as a laxative."
+    },
+    "HIBISCUS": {
+        details: `• Hibiscus is known for its rich antioxidant properties, helping to fight free radicals and reduce the risk of chronic diseases.
+• It has been traditionally used to support heart health by lowering blood pressure and cholesterol levels.
+• Hibiscus tea is a popular remedy for promoting relaxation, reducing stress, and improving overall skin health.`,
+        diseases: "• Hair Loss\n• High Blood Pressure\n• Cholesterol\n• Anxiety\n• Skin Aging",
+        remedies: "• Hibiscus tea to help lower blood pressure and cholesterol.\n• Hibiscus oil can be used to promote hair growth and prevent hair loss.\n• Apply hibiscus paste on the skin for a natural anti-aging treatment."
+    },
+    "ALOEVERA": {
+        details: `• Aloe Vera is known for its skin-healing and moisturizing properties, making it a popular ingredient in skincare products.
+• It helps to soothe sunburns, hydrate the skin, and reduce inflammation.
+• Aloe Vera also has digestive benefits, with its juice commonly used to improve gut health and detoxify the body.`,
+        diseases: "• Skin Burns\n• Acne\n• Digestion Issues\n• Constipation\n• Inflammation",
+        remedies: "• Aloe Vera gel is widely used to treat skin burns and wounds.\n• Aloe Vera juice aids in digestion and alleviates constipation.\n• Aloe Vera can be applied topically for acne treatment due to its antibacterial properties."
+    },
+    "AMLA": {
+        details: `• Amla, also known as Indian Gooseberry, is a powerful antioxidant, rich in vitamin C and is commonly used in Ayurvedic medicine.
+• It supports immune function, improves digestion, and is known for its ability to reduce inflammation.
+• Amla helps in detoxifying the body and can be used to promote healthy hair and skin.`,
+        diseases: "• Respiratory Disorders\n• Digestive Problems\n• Diabetes\n• Skin Aging\n• High Cholesterol",
+        remedies: "• Amla juice to boost immunity and improve digestion.\n• Amla powder can be applied to hair to reduce hair fall and promote growth.\n• Amla helps lower cholesterol levels and improve cardiovascular health."
+    },
+    "BAMBOO": {
+        details: `• Bamboo is widely known for its strength, fast growth, and sustainability. It is also used in traditional medicine for its anti-inflammatory properties.
+• Bamboo shoots are edible and can help with digestion. The plant is believed to have healing properties for conditions like arthritis and osteoporosis.
+• Bamboo is also used to support respiratory health and reduce symptoms of cough and asthma.`,
+        diseases: "• Respiratory Infections\n• Arthritis\n• Osteoporosis\n• Inflammation",
+        remedies: "• Bamboo leaf extract is used to improve respiratory health and reduce inflammation.\n• Bamboo shoots can be eaten to aid digestion.\n• Bamboo paste can be applied to joints to relieve pain associated with arthritis."
+    },
+    "JASMINE": {
+        details: `• Jasmine is widely appreciated for its aromatic flowers and therapeutic properties. It is often used in aromatherapy to promote relaxation and reduce stress.
+• The plant's flowers are rich in antioxidants, and Jasmine oil has antiseptic, antifungal, and antibacterial properties.
+• Jasmine is also known for improving sleep quality and is used in herbal teas for calming effects.`,
+        diseases: "• Anxiety\n• Insomnia\n• Skin Irritations\n• Stress",
+        remedies: "• Jasmine tea for relaxation and stress relief.\n• Jasmine oil can be used to treat skin irritations and promote better sleep.\n• Aromatherapy with Jasmine essential oil helps reduce anxiety and improve mood."
+    },
+    "ROSE": {
+        details: `• Rose is known for its beautiful flowers and sweet fragrance, but it also has medicinal uses in traditional medicine.
+• Rose petals are rich in antioxidants and have anti-inflammatory, antimicrobial, and soothing properties.
+• Rose water is often used in skincare for its hydrating and skin-rejuvenating effects, while rose oil is used for its calming effects on the mind.`,
+        diseases: "• Skin Irritations\n• Inflammation\n• Anxiety\n• Digestive Issues",
+        remedies: "• Rose water for hydrating the skin and reducing skin irritation.\n• Rose oil used in aromatherapy to alleviate stress and anxiety.\n• Rose petals can be used in teas to aid digestion and promote overall wellness."
+    }
+};
+
+
+            document.getElementById("plant-name").textContent = topPrediction.className || "Unknown Plant";
+            const plant = plantInfo[topPrediction.className] || {};
+            document.getElementById("plant-info").textContent = plant.details || "Information not available.";
+            document.getElementById("plant-diseases").textContent = plant.diseases || "Information not available.";
+            document.getElementById("plant-remedies").textContent = plant.remedies || "Information not available.";
+
+            document.getElementById("result-container").style.display = "block";
+            document.getElementById("home-page").style.display = "none";
+        }
+
+        function handleFileUpload(fileSrc) {
+            const image = new Image();
+            image.src = fileSrc;
+            image.onload = async () => {
+                document.getElementById("uploaded-image").src = image.src;
+                const predictions = await predictImage(image);
+                let topPrediction = { className: "", probability: 0 };
+
+                for (let i = 0; i < predictions.length; i++) {
+                    if (predictions[i].probability > topPrediction.probability) {
+                        topPrediction = predictions[i];
+                    }
+                }
+
+                updateResult(topPrediction);
+            };
+        }
+
+        function submitImage() {
+            const fileInput = document.getElementById('plant-image');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please upload an image.");
+                return;
+            }
+
+            const fileURL = URL.createObjectURL(file);
+            handleFileUpload(fileURL);
+        }
+
+        function goBack() {
+            document.getElementById("home-page").style.display = "block";
+            document.getElementById("result-container").style.display = "none";
+        }
+
+        window.onload = async () => {
+            await loadModel();
+        };
+    </script>
+</body>
+</html>

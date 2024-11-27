@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result</title>
+    <style>
+        /* Styling for the result page */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #8bc6ec, #9599e2);
+            color: #333;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 20px;
+            color: #fff;
+            font-size: 2.5rem;
+        }
+
+        #plantInfo {
+            background: #fff;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            margin: 20px auto;
+        }
+
+        #plantInfo h3 {
+            color: #4caf50;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Medicinal Plant Prediction Result</h1>
+
+    <div id="plantInfo">
+        <h3>Plant Details:</h3>
+        <p id="plantName"></p>
+        <p id="plantProbability"></p>
+        <p id="plantDetails"></p>
+        <button onclick="goBack()">Go Back</button>
+    </div>
+
+    <script>
+        // Get prediction data from localStorage
+        const prediction = JSON.parse(localStorage.getItem('plantPrediction'));
+
+        // Check if data exists
+        if (prediction) {
+            document.getElementById('plantName').textContent = "Predicted Plant: " + prediction.name;
+            document.getElementById('plantProbability').textContent = "Probability: " + prediction.probability + "%";
+            document.getElementById('plantDetails').textContent = "Details: " + prediction.details;
+        } else {
+            document.getElementById('plantInfo').innerHTML = "<p>No prediction data found.</p>";
+        }
+
+        // Go back to the first page
+        function goBack() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
